@@ -19,6 +19,7 @@ import Network.HTTP hiding (Response, Request)
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as B
 import Data.Time.Clock.POSIX
+import Data.Maybe
 
 -- Requests
 
@@ -26,7 +27,7 @@ data Request = Request {
   method    :: Text,
   arguments :: [Value],
   requestId :: Text
-}
+} deriving (Show)
 
 instance ToJSON Request where
   toJSON req = object
@@ -49,7 +50,7 @@ data Response = Response {
   result     :: Value,
   errorObj   :: Value,
   responseId :: Text
-}
+} deriving (Show)
 
 instance ToJSON Response where
   toJSON res = object
@@ -61,8 +62,8 @@ instance ToJSON Response where
 
 instance FromJSON Response where
   parseJSON (Object v) = Response
-    <$> v .: "result"
-    <*> v .: "error"
+    <$> (fromMaybe Null <$> v .:? "result")
+    <*> (fromMaybe Null <$> v .:? "error")
     <*> v .: "id"
   parseJSON _ = mzero
 
@@ -85,7 +86,7 @@ sendRequest uri req =
 
         parseResponse :: HTTP.Response ByteString -> Either Text Response
         parseResponse res
-          | rspCode res /= (4,0,0) = Left $ T.pack $ rspReason res
+          | rspCode res /= (2,0,0) = Left $ T.pack $ rspReason res
           | otherwise = either (Left . T.pack) Right $ eitherDecode (rspBody res)
 
 -- | Like sendRequest, but fills the id with something a little bit random
