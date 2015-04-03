@@ -13,7 +13,7 @@ import Data.Text (Text)
 -- Command line options and subcommands
 ---------------------------------------
 
-optParser :: Parser (Options, CmdAction)
+optParser :: Parser (Options, CmdAction ())
 optParser = (,) <$> opts <*> subparser commands
   where opts = Options
           <$> (Host <$> textOption
@@ -29,7 +29,7 @@ optParser = (,) <$> opts <*> subparser commands
                <> help "Port of the aria2-rpc server"))
 
 
-commands :: Mod CommandFields CmdAction
+commands :: Mod CommandFields (CmdAction ())
 commands = command "add" addCmd
 
 ---------------------------------------
@@ -37,7 +37,7 @@ commands = command "add" addCmd
 ---------------------------------------
 
 main :: IO ()
-main = execParser opts >>= \(os, cmd) -> cmd os
+main = execParser opts >>= uncurry runAction
 
   where opts = info (helper <*> optParser)
                (  fullDesc
