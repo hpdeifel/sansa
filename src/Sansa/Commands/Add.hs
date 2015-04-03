@@ -8,13 +8,18 @@ import qualified Data.Text.IO as T
 import Sansa.CommandsCommon
 import Aria2.Commands (addUris)
 import Aria2.Types
-
+import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import Network.URI
+
+doc :: Doc
+doc = text "Add URLs pointing to a single file for download."
+   <> line <> line
+   <> text "Returns the GID of the download."
 
 addCmd :: Command
 addCmd = info (helper <*> addOpts)
            (  fullDesc
-           <> header "add: Add URLs pointing to a single file for download"
+           <> headerDoc (Just doc)
            <> progDesc "Add URLs for download"
            )
 

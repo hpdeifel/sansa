@@ -1,4 +1,6 @@
-module Sansa.Commands.AddFromFile where
+module Sansa.Commands.AddFromFile
+       ( addFromFileCmd
+       ) where
 
 import Sansa.CommandsCommon
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
@@ -16,7 +18,8 @@ doc = text "Read URLs from FILE." <> line <> line
    <> text"FILE is read line by line. Every line can contain multiple URLs, which"
    <> line
    <> text "must all point to the same file." <> line <> line
-   <> text "FILE is -, read from stdin."
+   <> text "FILE is -, read from stdin." <> line
+   <> line <> text "The GID of every download is printed to stdout."
 
 addFromFileCmd :: Command
 addFromFileCmd = info (helper <*> affOpts)
