@@ -4,7 +4,7 @@ module Sansa.Commands.Pause
 
 import Sansa.CommandsCommon
 import Aria2.Types
-import Aria2.Commands (pause, pauseAll)
+import Aria2.Commands (pause, forcePause, pauseAll, forcePauseAll)
 import Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -15,6 +15,9 @@ doc = string $ unlines
   [ "Pause the downloads specified by the GIDs"
   , ""
   , "If --all is specified, pause all active/waiting downloads."
+  , ""
+  , "If --force is specified, pause the download without any action"
+  , "that takes time such as contacting a BitTorrent tracker."
   , ""
   , "The status of paused downloads becomes \"paused\". If the download"
   , "is active, it is placed on the first position of the waiting queue."
@@ -29,16 +32,22 @@ pauseCmd = info (helper <*> pauseOpts)
              <> progDesc "Pause downloads"
              )
 
-pauseOpts :: Parser (CmdAction ())
-pauseOpts = pauseAction <$>
-            ( flag' Nothing (  long "all"
-                            <> short 'a'
-                            <> help "Pause every active/waiting download")
-          <|> (Just <$> some (argument (GID . T.pack <$> str)
-                              (metavar "GIDs..."))))
+type Force = Bool
 
-pauseAction :: Maybe [GID] -> CmdAction ()
-pauseAction  Nothing      = void $ runAria2 pauseAll
-pauseAction  (Just gids)  = mapM_ pauseOne gids
+pauseOpts :: Parser (CmdAction ())
+pauseOpts = pauseAction
+   <$> flag False True (long "force" <> short 'f' <> help "Force the pause")
+   <*> (    flag' Nothing ( long "all" <> short 'a'
+                         <> help "Pause every active/waiting download")
+        <|> (Just <$> some (argument (GID . T.pack <$> str)
+                            (metavar "GIDs..."))))
+
+pauseAction :: Force -> Maybe [GID] -> CmdAction ()
+pauseAction False  Nothing = void $ runAria2 pauseAll
+pauseAction True  Nothing = void $ runAria2 forcePauseAll
+pauseAction False (Just gids)  = mapM_ pauseOne gids
   where pauseOne gid = runAria2 (pause gid) >>= \(GID gid') ->
+          liftIO $ T.putStrLn gid'
+pauseAction True (Just gids)  = mapM_ pauseOne gids
+  where pauseOne gid = runAria2 (forcePause gid) >>= \(GID gid') ->
           liftIO $ T.putStrLn gid'
