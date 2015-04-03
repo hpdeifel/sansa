@@ -3,6 +3,12 @@
 module Aria2.Commands
        ( Command
        , addUris
+       , pause
+       , pauseAll
+       , forcePause
+       , forcePauseAll
+       , unpause
+       , unpauseAll
        ) where
 
 import Aria2.Types
@@ -47,3 +53,21 @@ type Command a = Host -> Port -> IO (Either Text a)
 addUris :: [URI] -> Command GID
 addUris uris = command "aria2.addUri" [toJSON (map showUri uris)]
   where showUri uri = uriToString id uri ""
+
+pause :: GID -> Command GID
+pause gid = command "aria2.pause" [toJSON gid]
+
+pauseAll :: Command OK
+pauseAll = command "aria2.pauseAll" []
+
+forcePause :: GID -> Command GID
+forcePause gid = command "aria2.forcePause" [toJSON gid]
+
+forcePauseAll :: Command GID
+forcePauseAll = command "aria2.forcePauseAll" []
+
+unpause :: GID -> Command GID
+unpause gid = command "aria2.unpause" [toJSON gid]
+
+unpauseAll :: Command GID
+unpauseAll = command "aria2.unpauseAll" []
