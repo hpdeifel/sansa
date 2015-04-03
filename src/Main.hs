@@ -2,32 +2,49 @@
 
 module Main where
 
-import Aria2.Commands
 import Aria2.Types
+import Sansa.Commands
 
-import System.Environment
-import System.IO
-import System.Exit
-import Network.URI
-import Control.Monad
-import qualified Data.Text.IO as T
+import qualified Data.Text as T
+import Data.Text (Text)
+import Options.Applicative
 
-host :: Host
-host = Host "127.0.0.1"
+---------------------------------------
+-- Command line options and subcommands
+---------------------------------------
 
-port :: Port
-port = Port "6800"
+optParser :: Parser (Options, CmdAction)
+optParser = (,) <$> opts <*> subparser commands
+  where opts = Options
+          <$> (Host <$> textOption
+               (  long "host"
+               <> metavar "HOSTNAME"
+               <> value "localhost"
+               <> help "Host where the aria2-rpc server runs"))
+          <*> (Port <$> textOption
+               (  long "port"
+               <> short 'p'
+               <> metavar "PORT"
+               <> value "6800"
+               <> help "Port of the aria2-rpc server"))
+
+
+commands :: Mod CommandFields CmdAction
+commands = command "add" (info addCommand fullDesc)
+        <> command "foo" (info addCommand fullDesc)
+
+
+---------------------------------------
+-- main
+---------------------------------------
 
 main :: IO ()
-main = do
-  getArgs >>= \case
-    ("add":urls) -> do
-      uris <- forM urls $ \url -> case parseURI url of
-        Nothing -> do
-          hPutStrLn stderr $ "Could not parse url: " ++ url
-          exitWith (ExitFailure 1)
-        Just uri -> return uri
-      addUris uris host port >>= \case
-        Left err -> T.hPutStrLn stderr err
-        Right (GID gid) -> T.putStrLn gid
-    _ -> hPutStrLn stderr "Unknown command"
+main = execParser opts >>= \(os, cmd) -> cmd os
+
+  where opts = info (helper <*> optParser)
+               (  fullDesc
+               <> header "sansa - rpc frontend for aria2"
+               )
+
+textOption ::  Mod OptionFields Text -> Parser Text
+textOption = option (T.pack <$> str)
