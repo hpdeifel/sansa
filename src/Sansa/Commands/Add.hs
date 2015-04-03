@@ -15,6 +15,7 @@ addCmd :: Command
 addCmd = info (helper <*> addOpts)
            (  fullDesc
            <> header "add: Add URLs pointing to a single file for download"
+           <> progDesc "Add URLs for download"
            )
 
 addOpts :: Parser (CmdAction ())
