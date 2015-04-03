@@ -3,11 +3,11 @@
 module Main where
 
 import Aria2.Types
+import Sansa.CommandsCommon
 import Sansa.Commands
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import Options.Applicative
 
 ---------------------------------------
 -- Command line options and subcommands
@@ -30,9 +30,7 @@ optParser = (,) <$> opts <*> subparser commands
 
 
 commands :: Mod CommandFields CmdAction
-commands = command "add" (info addCommand fullDesc)
-        <> command "foo" (info addCommand fullDesc)
-
+commands = command "add" addCmd
 
 ---------------------------------------
 -- main
