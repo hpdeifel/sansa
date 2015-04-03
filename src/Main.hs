@@ -32,6 +32,7 @@ optParser = (,) <$> opts <*> subparser commands
 commands :: Mod CommandFields (CmdAction ())
 commands = command "add" addCmd
         <> command "addfile" addFromFileCmd
+        <> command "pause" pauseCmd
 
 ---------------------------------------
 -- main
