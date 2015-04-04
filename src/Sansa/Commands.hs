@@ -1,11 +1,7 @@
-module Sansa.Commands
-       ( module Sansa.Commands.Add
-       , module Sansa.Commands.AddFromFile
-       , module Sansa.Commands.Pause
-       , module Sansa.Commands.Unpause
-       ) where
+module Sansa.Commands ( module X ) where
 
-import Sansa.Commands.Add
-import Sansa.Commands.AddFromFile
-import Sansa.Commands.Pause
-import Sansa.Commands.Unpause
+import Sansa.Commands.Add as X
+import Sansa.Commands.AddFromFile as X
+import Sansa.Commands.Pause as X
+import Sansa.Commands.Unpause as X
+import Sansa.Commands.Remove as X

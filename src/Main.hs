@@ -34,6 +34,7 @@ commands = command "add" addCmd
         <> command "addfile" addFromFileCmd
         <> command "pause" pauseCmd
         <> command "unpause" unpauseCmd
+        <> command "remove" removeCmd
 
 ---------------------------------------
 -- main
