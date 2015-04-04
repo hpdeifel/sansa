@@ -1,4 +1,6 @@
-{-# LANGUAGE OverloadedStrings, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings, LambdaCase, TypeSynonymInstances,
+             FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Aria2.Commands
        ( Command
@@ -55,8 +57,8 @@ type Command = ReaderT ConnectionSettings (ExceptT Text IO)
 runCommand :: ConnectionSettings -> Command a -> IO (Either Text a)
 runCommand settings action = runExceptT $ runReaderT action settings
 
-command :: FromJSON a => MethodName -> [Value] -> Command a
-command (MethodName meth) args = do
+commandImpl :: FromJSON a => MethodName -> [Value] -> Command a
+commandImpl (MethodName meth) args = do
   h <- asks host
   p <- asks port
   res <- liftIO $ sendRequest' (mkUri h p) request
@@ -71,31 +73,44 @@ command (MethodName meth) args = do
           requestId = ""
         }
 
+class CmdType r where
+  execCmd :: MethodName -> [Value] -> r
+
+instance FromJSON a => CmdType (Command a) where
+  execCmd = commandImpl
+
+instance (CmdType r, ToJSON a) => CmdType (a -> r) where
+  execCmd name args arg1 = execCmd name (args ++ [toJSON arg1])
+
+instance ToJSON URI where
+  toJSON uri = String $ T.pack $ uriToString id uri ""
+
+command :: (CmdType r) => MethodName -> r
+command name = execCmd name []
 
 addUris :: [URI] -> Command GID
-addUris uris = command "aria2.addUri" [toJSON (map showUri uris)]
-  where showUri uri = uriToString id uri ""
+addUris = command "aria2.addUri"
 
 pause :: GID -> Command GID
-pause gid = command "aria2.pause" [toJSON gid]
+pause = command "aria2.pause"
 
 pauseAll :: Command OK
-pauseAll = command "aria2.pauseAll" []
+pauseAll = command "aria2.pauseAll"
 
 forcePause :: GID -> Command GID
-forcePause gid = command "aria2.forcePause" [toJSON gid]
+forcePause = command "aria2.forcePause"
 
 forcePauseAll :: Command GID
-forcePauseAll = command "aria2.forcePauseAll" []
+forcePauseAll = command "aria2.forcePauseAll"
 
 unpause :: GID -> Command GID
-unpause gid = command "aria2.unpause" [toJSON gid]
+unpause = command "aria2.unpause"
 
 unpauseAll :: Command GID
-unpauseAll = command "aria2.unpauseAll" []
+unpauseAll = command "aria2.unpauseAll"
 
 remove :: GID -> Command GID
-remove gid = command "aria2.remove" [toJSON gid]
+remove = command "aria2.remove"
 
 forceRemove :: GID -> Command GID
-forceRemove gid = command "aria2.forceRemove" [toJSON gid]
+forceRemove = command "aria2.forceRemove"
