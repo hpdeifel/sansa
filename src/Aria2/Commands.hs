@@ -21,6 +21,7 @@ import Aria2.Types
 import Data.Aeson
 import JsonRPC
 import Network.URI
+import Network.URI.Json ()
 import qualified Data.Text as T
 import Data.Text (Text)
 
@@ -81,9 +82,6 @@ instance FromJSON a => CmdType (Command a) where
 
 instance (CmdType r, ToJSON a) => CmdType (a -> r) where
   execCmd name args arg1 = execCmd name (args ++ [toJSON arg1])
-
-instance ToJSON URI where
-  toJSON uri = String $ T.pack $ uriToString id uri ""
 
 command :: (CmdType r) => MethodName -> r
 command name = execCmd name []
