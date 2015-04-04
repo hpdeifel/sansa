@@ -35,6 +35,7 @@ commands = command "add" addCmd
         <> command "pause" pauseCmd
         <> command "unpause" unpauseCmd
         <> command "remove" removeCmd
+        <> command "list" listCmd
 
 ---------------------------------------
 -- main
