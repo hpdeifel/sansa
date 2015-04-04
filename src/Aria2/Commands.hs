@@ -121,10 +121,10 @@ tellStatus :: GID -> Command DownloadInfo
 tellStatus = command "aria2.tellStatus"
 
 tellActive :: Command [DownloadInfo]
-tellActive = command "aria2.tellActive"
+tellActive = command "aria2.tellActive" ([] :: [String])
 
-tellWaiting :: Command [DownloadInfo]
+tellWaiting :: Int -> Int -> Command [DownloadInfo]
 tellWaiting = command "aria2.tellWaiting"
 
-tellStopped :: Command [DownloadInfo]
+tellStopped :: Int -> Int -> Command [DownloadInfo]
 tellStopped = command "aria2.tellStopped"

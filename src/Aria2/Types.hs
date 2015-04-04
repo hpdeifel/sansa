@@ -19,6 +19,7 @@ import Control.Applicative
 import Control.Monad
 import Network.URI
 import Network.URI.Json ()
+import Data.Aeson.Types
 
 newtype GID = GID Text
 
@@ -58,6 +59,14 @@ newtype Port = Port Text
 
 data Status = StActive | StWaiting | StPaused | StError | StComplete | StRemoved
 
+instance Show Status where
+  show StActive = "active"
+  show StWaiting = "waiting"
+  show StPaused = "paused"
+  show StError = "error"
+  show StComplete = "complete"
+  show StRemoved = "removed"
+
 instance FromJSON Status where
   parseJSON (String str) = case str of
     "active"   -> pure StActive
@@ -96,14 +105,20 @@ data FileInfo = FileInfo {
   fiUris :: [UriInfo]
 }
 
+readBool :: Text -> Parser Bool
+readBool "true"  = return True
+readBool "false" = return False
+readBool _       = mzero
+
 instance FromJSON FileInfo where
   parseJSON (Object v) = FileInfo
                      <$> (read <$> v .: "index")
                      <*> v .: "path"
                      <*> (read <$> v .: "length")
                      <*> (read <$> v .: "completedLength")
-                     <*> v .: "selected"
+                     <*> (v .: "selected" >>= readBool)
                      <*> v .: "uris"
+  parseJSON _ = mzero
 
 data DownloadInfo = Info {
   diGID :: GID,
@@ -123,7 +138,7 @@ data DownloadInfo = Info {
   -- TODO followedBy
   -- TODO belongsTo
   diDir :: Maybe FilePath,
-  files :: [FileInfo]
+  diFiles :: [FileInfo]
   -- TODO bittorrent
 }
 
