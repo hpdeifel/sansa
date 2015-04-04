@@ -62,7 +62,8 @@ command (MethodName meth) args = do
   res <- liftIO $ sendRequest' (mkUri h p) request
   lift (either throwE return res) >>= \res' -> case errorObj res' of
     Null -> lift $ exceptT $ resultToEither $ fromJSON (result res')
-    err  -> lift $ either throwE throwE $ resultToEither $ fromJSON err
+    err  -> lift $ either throwE (throwE.errorMessage) $
+              resultToEither $ fromJSON err
 
   where request = Request {
           method = meth,

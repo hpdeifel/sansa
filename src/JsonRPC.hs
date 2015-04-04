@@ -85,9 +85,8 @@ sendRequest uri req =
         body = encode req
 
         parseResponse :: HTTP.Response ByteString -> Either Text Response
-        parseResponse res
-          | rspCode res /= (2,0,0) = Left $ T.pack $ rspReason res
-          | otherwise = either (Left . T.pack) Right $ eitherDecode (rspBody res)
+        parseResponse res = either (Left . T.pack) Right $
+                              eitherDecode (rspBody res)
 
 -- | Like sendRequest, but fills the id with something a little bit random
 sendRequest' :: URI -> Request -> IO (Either Text Response)

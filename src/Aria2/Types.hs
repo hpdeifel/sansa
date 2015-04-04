@@ -1,5 +1,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}
-module Aria2.Types where
+module Aria2.Types
+       ( GID(..)
+       , OK(..)
+       , Error(..)
+       , MethodName(..)
+       , Host(..)
+       , Port(..)
+       ) where
 
 import Data.Text (Text)
 import Data.String
@@ -24,6 +31,15 @@ instance ToJSON OK where
 
 instance FromJSON OK where
   parseJSON (String "OK") = pure OK
+  parseJSON _ = mzero
+
+data Error = Err {
+  errorCode :: Int,
+  errorMessage :: Text
+}
+
+instance FromJSON Error where
+  parseJSON (Object v) = Err <$> v .: "code" <*> v .: "message"
   parseJSON _ = mzero
 
 newtype MethodName = MethodName Text
