@@ -9,6 +9,8 @@ module Aria2.Commands
        , forcePauseAll
        , unpause
        , unpauseAll
+       , remove
+       , forceRemove
        ) where
 
 import Aria2.Types
@@ -71,3 +73,9 @@ unpause gid = command "aria2.unpause" [toJSON gid]
 
 unpauseAll :: Command GID
 unpauseAll = command "aria2.unpauseAll" []
+
+remove :: GID -> Command GID
+remove gid = command "aria2.remove" [toJSON gid]
+
+forceRemove :: GID -> Command GID
+forceRemove gid = command "aria2.forceRemove" [toJSON gid]
