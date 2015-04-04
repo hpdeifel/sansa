@@ -37,5 +37,6 @@ runAction opts act = runExceptT (runReaderT act opts) >>= \case
   Right x -> return x
 
 runAria2 :: AC.Command a -> CmdAction a
-runAria2 act =
-  act<$> asks host <*> asks port >>= liftIO >>= either (lift.throwE) return
+runAria2 act = do
+  conSettings <- AC.ConSettings <$> asks host <*> asks port
+  liftIO (AC.runCommand conSettings act) >>= either (lift.throwE) return
