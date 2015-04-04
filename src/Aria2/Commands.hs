@@ -15,6 +15,10 @@ module Aria2.Commands
        , unpauseAll
        , remove
        , forceRemove
+       , tellStatus
+       , tellActive
+       , tellWaiting
+       , tellStopped
        ) where
 
 import Aria2.Types
@@ -112,3 +116,15 @@ remove = command "aria2.remove"
 
 forceRemove :: GID -> Command GID
 forceRemove = command "aria2.forceRemove"
+
+tellStatus :: GID -> Command DownloadInfo
+tellStatus = command "aria2.tellStatus"
+
+tellActive :: Command [DownloadInfo]
+tellActive = command "aria2.tellActive"
+
+tellWaiting :: Command [DownloadInfo]
+tellWaiting = command "aria2.tellWaiting"
+
+tellStopped :: Command [DownloadInfo]
+tellStopped = command "aria2.tellStopped"
