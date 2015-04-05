@@ -8,6 +8,7 @@ import Sansa.Commands
 
 import qualified Data.Text as T
 import Data.Text (Text)
+import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 
 ---------------------------------------
 -- Command line options and subcommands
@@ -36,17 +37,24 @@ commands = command "add" addCmd
         <> command "unpause" unpauseCmd
         <> command "remove" removeCmd
         <> command "list" listCmd
+        <> command "status" statusCmd
 
 ---------------------------------------
 -- main
 ---------------------------------------
+
+doc :: Doc
+doc = text "sansa - rpc frontend for aria2"
+   <> line <> line
+   <> text "To get help for subcommand CMD, call sansa with 'CMD --help' as"
+   <> line <> text "argument."
 
 main :: IO ()
 main = execParser opts >>= uncurry runAction
 
   where opts = info (helper <*> optParser)
                (  fullDesc
-               <> header "sansa - rpc frontend for aria2"
+               <> headerDoc (Just doc)
                )
 
 textOption ::  Mod OptionFields Text -> Parser Text

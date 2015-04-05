@@ -6,3 +6,4 @@ import Sansa.Commands.Pause as X
 import Sansa.Commands.Unpause as X
 import Sansa.Commands.Remove as X
 import Sansa.Commands.List as X
+import Sansa.Commands.Status as X

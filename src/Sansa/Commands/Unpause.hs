@@ -1,4 +1,4 @@
-module Sansa.Commands.Unpause where
+module Sansa.Commands.Unpause ( unpauseCmd ) where
 
 import Sansa.CommandsCommon
 import Aria2.Types
