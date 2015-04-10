@@ -61,6 +61,9 @@ printStatus1 di =
          <+> progress ul tl
          <+> percent ul tl
          <+> int ul <> "/" <> int tl <+> text "Bytes"
+  <$$> fill (T.length "Download:") (text "Speed")
+         <+> int dr <+> "B/s" <+> "Down,"
+         <+> int ur <+> "B/s" <+> "Up"
   <$$> text "Files:"
   <$$> indent 2 (vcat $ map printFile (diFiles di))
 
@@ -68,6 +71,9 @@ printStatus1 di =
         dl = diCompletedLength di
         ul = diUploadLength di
         tl = diTotalLength di
+
+        ur = diUploadSpeed di
+        dr = diDownloadSpeed di
 
 printFile :: FileInfo -> Doc
 printFile = text . fiPath
