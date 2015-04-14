@@ -136,7 +136,7 @@ bestSpeed :: DataSpeed -> SomeUnit DataSpeedDim
 bestSpeed x
   | x # kibi Byte :/ Second < 1 = SomeUnit $ Byte :/ Second
   | x # mibi Byte :/ Second < 1 = SomeUnit $ kibi Byte :/ Second
-  | x # gibi Byte :/ Second < 1 = SomeUnit $ gibi Byte :/ Second
+  | x # gibi Byte :/ Second < 1 = SomeUnit $ mibi Byte :/ Second
   | otherwise         = SomeUnit $ gibi Byte :/ Second
 
 -- TODO Generalize
