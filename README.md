@@ -45,22 +45,18 @@ sure to read it. Help for individual subcommands can be optained with
 Instead of repeating the help output in this README, here are some
 example invocations with their output:
 
-## Examples
+## Example
 
 ```
-sansa add add http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso
+> sansa add add http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso
+> sansa status
+#1 active
+Download: [###                 ] (17%)  648.84 MiB / 3.70 GiB
+Upload:   [                    ] (0%)   0.00 B / 3.70 GiB
+Speed     46.15 MiB/s Down, 0.00 B/s Up
+Files:
+  /tmp/debian-testing-amd64-DVD-1.iso
 ```
-
-```
-sansa status
-```
-
-> #1 active
-> Download: [###                 ] (17%)  648.84 MiB / 3.70 GiB
-> Upload:   [                    ] (0%)   0.00 B / 3.70 GiB
-> Speed     46.15 MiB/s Down, 0.00 B/s Up
-> Files:
->   /tmp/debian-testing-amd64-DVD-1.iso
 
 
 [aria2]: http://aria2.sourceforge.net/
