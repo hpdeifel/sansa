@@ -20,6 +20,7 @@ import Control.Monad
 import Network.URI
 import Network.URI.Json ()
 import Data.Aeson.Types
+import Data.Units
 
 newtype GID = GID Text
 
@@ -123,9 +124,9 @@ instance FromJSON FileInfo where
 data DownloadInfo = Info {
   diGID :: GID,
   diStatus :: Status,
-  diTotalLength :: Int,
-  diCompletedLength :: Int,
-  diUploadLength :: Int,
+  diTotalLength :: DataSize,
+  diCompletedLength :: DataSize,
+  diUploadLength :: DataSize,
   -- TODO bitfield
   diDownloadSpeed :: Int,
   diUploadSpeed :: Int,
@@ -148,9 +149,9 @@ instance FromJSON DownloadInfo where
   parseJSON (Object v) = Info
                      <$> v .: "gid"
                      <*> v .: "status"
-                     <*> (read <$> v .: "totalLength")
-                     <*> (read <$> v .: "completedLength")
-                     <*> (read <$> v .: "uploadLength")
+                     <*> (((% Byte) . read) <$> v .: "totalLength")
+                     <*> (((% Byte) . read) <$> v .: "completedLength")
+                     <*> (((% Byte) . read) <$> v .: "uploadLength")
                      <*> (read <$> v .: "downloadSpeed")
                      <*> (read <$> v .: "uploadSpeed")
                      <*> (v .:? "dir")

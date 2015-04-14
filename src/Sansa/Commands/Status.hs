@@ -10,6 +10,8 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Text (Text)
 import Control.Monad
+import Data.Units
+import Text.Printf
 
 doc :: Doc
 doc = text "Print the current status of each download"
@@ -56,11 +58,11 @@ printStatus1 di =
   <$$> text "Download:"
          <+> progress dl tl
          <+> percent dl tl
-         <+> int dl <> "/" <> int tl <+> text "Bytes"
+         <+> string (showInBest out dl) <+> "/" <+> string (showInBest out tl)
   <$$> fill (T.length "Download:") (text "Upload:")
          <+> progress ul tl
          <+> percent ul tl
-         <+> int ul <> "/" <> int tl <+> text "Bytes"
+         <+> string (showInBest out ul) <+> "/" <+> string (showInBest out tl)
   <$$> fill (T.length "Download:") (text "Speed")
          <+> int dr <+> "B/s" <+> "Down,"
          <+> int ur <+> "B/s" <+> "Up"
@@ -75,16 +77,23 @@ printStatus1 di =
         ur = diUploadSpeed di
         dr = diDownloadSpeed di
 
+        out = printf "%.2g"
+
 printFile :: FileInfo -> Doc
 printFile = text . fiPath
 
-percent :: Int -> Int -> Doc
-percent x total = fill (3+1+2) $
+percent :: DataSize -> DataSize -> Doc
+percent x' total' = fill (3+1+2) $
   parens $ int ((x * 100) `div` total) <> text "%"
 
-progress :: Int -> Int -> Doc
-progress x total = brackets $ fill 20 $
+  where x = floor (x' # Byte)
+        total = floor (total' # Byte)
+
+progress :: DataSize -> DataSize -> Doc
+progress x' total' = brackets $ fill 20 $
                    text $ replicate ((x * 20) `div` total) '#'
+  where x  = floor (x' # Byte)
+        total = floor (total' # Byte)
 
 toDoc :: Show a => a -> Doc
 toDoc = text . show
