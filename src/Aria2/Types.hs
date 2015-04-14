@@ -128,8 +128,8 @@ data DownloadInfo = Info {
   diCompletedLength :: DataSize,
   diUploadLength :: DataSize,
   -- TODO bitfield
-  diDownloadSpeed :: Int,
-  diUploadSpeed :: Int,
+  diDownloadSpeed :: DataSpeed,
+  diUploadSpeed :: DataSpeed,
   -- TODO infoHash
   -- TODO numSeeders
   -- TODO pieceLength
@@ -152,8 +152,11 @@ instance FromJSON DownloadInfo where
                      <*> (((% Byte) . read) <$> v .: "totalLength")
                      <*> (((% Byte) . read) <$> v .: "completedLength")
                      <*> (((% Byte) . read) <$> v .: "uploadLength")
-                     <*> (read <$> v .: "downloadSpeed")
-                     <*> (read <$> v .: "uploadSpeed")
+                     <*> (readBytesPerSecond <$> v .: "downloadSpeed")
+                     <*> (readBytesPerSecond <$> v .: "uploadSpeed")
                      <*> (v .:? "dir")
                      <*> v .: "files"
   parseJSON _ = mzero
+
+readBytesPerSecond :: String -> DataSpeed
+readBytesPerSecond = (% (Byte :/ Second)) . read

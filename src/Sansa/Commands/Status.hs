@@ -58,14 +58,16 @@ printStatus1 di =
   <$$> text "Download:"
          <+> progress dl tl
          <+> percent dl tl
-         <+> string (showInBest out dl) <+> "/" <+> string (showInBest out tl)
+         <+> string (showInBest out DataSizeDim dl)
+            <+> "/" <+> string (showInBest out DataSizeDim tl)
   <$$> fill (T.length "Download:") (text "Upload:")
          <+> progress ul tl
          <+> percent ul tl
-         <+> string (showInBest out ul) <+> "/" <+> string (showInBest out tl)
+         <+> string (showInBest out DataSizeDim ul)
+            <+> "/" <+> string (showInBest out DataSizeDim tl)
   <$$> fill (T.length "Download:") (text "Speed")
-         <+> int dr <+> "B/s" <+> "Down,"
-         <+> int ur <+> "B/s" <+> "Up"
+         <+> string (showInBest out dataSpeedDim dr) <+> "Down,"
+         <+> string (showInBest out dataSpeedDim ur) <+> "Up"
   <$$> text "Files:"
   <$$> indent 2 (vcat $ map printFile (diFiles di))
 
