@@ -48,7 +48,7 @@ example invocations with their output:
 ## Example
 
 ```
-> sansa add add http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso
+> sansa add http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso
 > sansa status
 #1 active
 Download: [###                 ] (17%)  648.84 MiB / 3.70 GiB
