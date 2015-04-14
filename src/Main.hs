@@ -44,10 +44,11 @@ commands = command "add" addCmd
 ---------------------------------------
 
 doc :: Doc
-doc = text "sansa - rpc frontend for aria2"
-   <> line <> line
-   <> text "To get help for subcommand CMD, call sansa with 'CMD --help' as"
-   <> line <> text "argument."
+doc = text "sansa - rpc frontend for aria2" <> line
+   <$$> text "To get help for subcommand CMD, call sansa with 'CMD --help' as"
+   <$$> text "argument." <> line
+   <$$> text "Many commands use or return so called GIDs. These are just"
+   <$$> text "download-IDs, that are used to identify specific downloads."
 
 main :: IO ()
 main = execParser opts >>= uncurry runAction
