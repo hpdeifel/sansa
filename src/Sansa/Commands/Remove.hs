@@ -6,7 +6,6 @@ import Sansa.CommandsCommon
 import Aria2.Commands (remove, forceRemove)
 import Aria2.Types
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
-import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import Control.Monad
 
@@ -21,8 +20,6 @@ doc =
    <> text "If --force is specified, remove downloads without any action that"
    <> line
    <> text "takes time such as contacting a BitTorrent tracker"
-   <> line <> line
-   <> text "Prints the GID for every download"
 
 removeCmd :: Command
 removeCmd = info (helper <*> removeOpts)
@@ -41,5 +38,4 @@ type Force = Bool
 removeAction :: Force -> [GID] -> CmdAction ()
 removeAction force gids = forM_ gids $ \gid -> do
   let remAction = if force then forceRemove else remove
-  GID gid' <- runAria2 (remAction gid)
-  liftIO $ T.putStrLn gid'
+  void $ runAria2 (remAction gid)

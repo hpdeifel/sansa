@@ -7,9 +7,7 @@ import Aria2.Types
 import Aria2.Commands (tellActive, tellWaiting, tellStopped, tellStatus)
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Text (Text)
-import Control.Monad
 import Data.Units
 import Text.Printf
 

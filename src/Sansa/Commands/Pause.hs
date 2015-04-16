@@ -7,7 +7,6 @@ import Aria2.Types
 import Aria2.Commands (pause, forcePause, pauseAll, forcePauseAll)
 import Control.Monad
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 
 doc :: Doc
@@ -46,8 +45,6 @@ pauseAction :: Force -> Maybe [GID] -> CmdAction ()
 pauseAction False  Nothing = void $ runAria2 pauseAll
 pauseAction True  Nothing = void $ runAria2 forcePauseAll
 pauseAction False (Just gids)  = mapM_ pauseOne gids
-  where pauseOne gid = runAria2 (pause gid) >>= \(GID gid') ->
-          liftIO $ T.putStrLn gid'
+  where pauseOne gid = void $ runAria2 (pause gid)
 pauseAction True (Just gids)  = mapM_ pauseOne gids
-  where pauseOne gid = runAria2 (forcePause gid) >>= \(GID gid') ->
-          liftIO $ T.putStrLn gid'
+  where pauseOne gid = void $ runAria2 (forcePause gid)

@@ -5,7 +5,6 @@ import Aria2.Types
 import Aria2.Commands (unpause, unpauseAll)
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Control.Monad
 
 doc :: Doc
@@ -36,5 +35,4 @@ unpauseOpts = unpauseAction <$>
 unpauseAction :: Maybe [GID] -> CmdAction ()
 unpauseAction  Nothing      = void $ runAria2 unpauseAll
 unpauseAction  (Just gids)  = mapM_ pauseOne gids
-  where pauseOne gid = runAria2 (unpause gid) >>= \(GID gid') ->
-          liftIO $ T.putStrLn gid'
+  where pauseOne gid = void $ runAria2 (unpause gid)
