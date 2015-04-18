@@ -21,6 +21,7 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import System.IO
+import System.Exit
 
 data Options = Options {
   host :: Host,
@@ -34,6 +35,7 @@ type Command = ParserInfo (CmdAction ())
 runAction :: Options -> CmdAction () -> IO ()
 runAction opts act = runExceptT (runReaderT act opts) >>= \case
   Left err -> T.hPutStrLn stderr (T.append "error: " err)
+              >> exitWith (ExitFailure 1)
   Right x -> return x
 
 runAria2 :: AC.Command a -> CmdAction a
