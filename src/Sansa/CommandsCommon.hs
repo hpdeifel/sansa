@@ -25,7 +25,9 @@ import System.Exit
 
 data Options = Options {
   host :: Host,
-  port :: Port
+  port :: Port,
+  user :: Maybe Text,
+  password :: Maybe Text
 }
 
 type CmdAction = ReaderT Options (ExceptT Text IO)
@@ -41,4 +43,5 @@ runAction opts act = runExceptT (runReaderT act opts) >>= \case
 runAria2 :: AC.Command a -> CmdAction a
 runAria2 act = do
   conSettings <- AC.ConSettings <$> asks host <*> asks port
+                                <*> asks user <*> asks password
   liftIO (AC.runCommand conSettings act) >>= either (lift.throwE) return

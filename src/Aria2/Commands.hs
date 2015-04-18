@@ -28,6 +28,7 @@ import Network.URI
 import Network.URI.Json ()
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Maybe
 
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Except
@@ -54,7 +55,9 @@ exceptT (Right b) = return b
 
 data ConnectionSettings = ConSettings {
   host :: Host,
-  port :: Port
+  port :: Port,
+  user :: Maybe Text,
+  password :: Maybe Text
 }
 
 type Command = ReaderT ConnectionSettings (ExceptT Text IO)
@@ -66,7 +69,8 @@ commandImpl :: FromJSON a => MethodName -> [Value] -> Command a
 commandImpl (MethodName meth) args = do
   h <- asks host
   p <- asks port
-  res <- liftIO $ sendRequest' (mkUri h p) request
+  auth <- mkAuth
+  res <- liftIO $ sendRequest' (mkUri h p) auth request
   lift (either throwE return res) >>= \res' -> case errorObj res' of
     Null -> lift $ exceptT $ resultToEither $ fromJSON (result res')
     err  -> lift $ either throwE (throwE.errorMessage) $
@@ -77,6 +81,13 @@ commandImpl (MethodName meth) args = do
           arguments = args,
           requestId = ""
         }
+
+        mkAuth = do
+          u <- asks user
+          p <- asks password
+          case (u, p) of
+            (Nothing, Nothing) -> return Nothing
+            _ -> return $ Just $ Credentials (fromMaybe "" u) (fromMaybe "" p)
 
 class CmdType r where
   execCmd :: MethodName -> [Value] -> r

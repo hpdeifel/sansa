@@ -4,6 +4,7 @@ module JsonRPC
 
        ( Request(..)
        , Response(..)
+       , Credentials(..)
        , sendRequest
        , sendRequest'
        ) where
@@ -13,13 +14,16 @@ import qualified Data.Text as T
 import Data.Aeson
 import Control.Applicative
 import Control.Monad
+import Control.Monad.IO.Class
 import Network.URI
 import qualified Network.HTTP.Base as HTTP
-import Network.HTTP hiding (Response, Request)
+import Network.HTTP hiding (Response, Request, user)
+import Network.Browser
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as B
 import Data.Time.Clock.POSIX
 import Data.Maybe
+import System.IO
 
 -- Requests
 
@@ -67,11 +71,12 @@ instance FromJSON Response where
     <*> v .: "id"
   parseJSON _ = mzero
 
-sendRequest :: URI -> Request -> IO (Either Text Response)
-sendRequest uri req =
-  simpleHTTP httpRequest >>= \case
-    Left err -> return $ Left $ T.pack $ show err
-    Right res -> return $ parseResponse res
+data Credentials = Credentials Text Text
+
+sendRequest :: URI -> (Maybe Credentials) -> Request -> IO (Either Text Response)
+sendRequest uri cred req =
+  browse browser >>= \case
+    (_, res) -> return $ parseResponse res
 
   where httpRequest = HTTP.Request {
           rqURI = uri,
@@ -82,6 +87,18 @@ sendRequest uri req =
           rqBody = body
         }
 
+        browser = do
+          -- FIXME: Browser still prints some absolutely unusable error messages
+          setErrHandler (const $ return ())
+          setDebugLog Nothing
+          setOutHandler (const $ return ())
+          setAuthorityGen $ \_ _ -> case cred of
+            Nothing -> do
+              liftIO $ hPutStrLn stderr "Authentication requested, but no credentials given"
+              return Nothing
+            Just (Credentials user pw) -> return $ Just (T.unpack user, T.unpack pw)
+          request httpRequest
+
         body = encode req
 
         parseResponse :: HTTP.Response ByteString -> Either Text Response
@@ -89,7 +106,7 @@ sendRequest uri req =
                               eitherDecode (rspBody res)
 
 -- | Like sendRequest, but fills the id with something a little bit random
-sendRequest' :: URI -> Request -> IO (Either Text Response)
-sendRequest' uri req = do
+sendRequest' :: URI -> (Maybe Credentials) -> Request -> IO (Either Text Response)
+sendRequest' uri cred req = do
   time <- getPOSIXTime
-  sendRequest uri req { requestId = T.pack (show time) }
+  sendRequest uri cred req { requestId = T.pack (show time) }

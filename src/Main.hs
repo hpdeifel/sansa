@@ -28,6 +28,14 @@ optParser = (,) <$> opts <*> subparser commands
                <> metavar "PORT"
                <> value "6800"
                <> help "Port of the aria2-rpc server"))
+          <*> optional (textOption
+               (  long "user"
+               <> metavar "USERNAME"
+               <> help "RPC username for aria2"))
+          <*> optional (textOption
+               (  long "password"
+               <> metavar "PASSWORD"
+               <> help "RPC password for aria2"))
 
 
 commands :: Mod CommandFields (CmdAction ())
