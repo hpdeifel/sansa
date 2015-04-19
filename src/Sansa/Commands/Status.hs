@@ -2,7 +2,7 @@
 
 module Sansa.Commands.Status ( statusCmd ) where
 
-import Sansa.CommandsCommon
+import Sansa.CommandsCommon hiding (empty)
 import Aria2.Types
 import Aria2.Commands (tellActive, tellWaiting, tellStopped, tellStatus)
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
@@ -83,14 +83,18 @@ printFile :: FileInfo -> Doc
 printFile = text . fiPath
 
 percent :: DataSize -> DataSize -> Doc
-percent x' total' = fill (3+1+2) $
-  parens $ int ((x * 100) `div` total) <> text "%"
+percent x' total'
+  | total == 0 = text "(0%)  "
+  | otherwise  = fill (3+1+2) $
+                 parens $ int ((x * 100) `div` total) <> text "%"
 
   where x = floor (x' # Byte)
         total = floor (total' # Byte)
 
 progress :: DataSize -> DataSize -> Doc
-progress x' total' = brackets $ fill 20 $
+progress x' total'
+  | total == 0 = brackets $ fill 20 empty
+  | otherwise = brackets $ fill 20 $
                    text $ replicate ((x * 20) `div` total) '#'
   where x  = floor (x' # Byte)
         total = floor (total' # Byte)
