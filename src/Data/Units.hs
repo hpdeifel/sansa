@@ -9,6 +9,9 @@ module Data.Units
        , Time
        , TimeDim(..)
        , Second(..)
+       , Minute(..)
+       , Hour(..)
+       , showTime
 
        , DataSpeed
        , DataSpeedDim
@@ -19,6 +22,7 @@ module Data.Units
 
 import Data.Metrology as X
 import Data.Metrology.Show as X ()
+import Text.Printf
 
 ------------------------------------------------------------
 -- Data Size -----------------------------------------------
@@ -93,7 +97,42 @@ instance Show Second where
 
 type instance DefaultUnitOfDim TimeDim = Second
 
+data Minute = Minute
+
+instance Unit Minute where
+  type BaseUnit Minute = Second
+  type DimOfUnit Minute = TimeDim
+  conversionRatio _ = 60
+
+instance Show Minute where
+  show _ = "m"
+
+data Hour = Hour
+
+instance Unit Hour where
+  type BaseUnit Hour = Second
+  type DimOfUnit Hour = TimeDim
+  conversionRatio _ = 60*60
+
+instance Show Hour where
+  show _ = "h"
+
 type Time = MkQu_D TimeDim
+
+showTime :: Time -> String
+showTime t = unwords [h', m', s']
+  where h = floor $ t # Hour :: Int
+        m = floor $ (t |-| (fi h % Hour)) # Minute :: Int
+        s = floor $ (t |-| (fi h % Hour) |-| (fi m % Minute)) # Second :: Int
+
+        fi = fromIntegral
+
+        h' = if h == 0 then "" else fmt h "h"
+        m' = if h == 0 && m == 0 then "" else fmt m "m"
+        s' = fmt s "s"
+
+        fmt :: Int -> String -> String
+        fmt = printf "%02d%s"
 
 ------------------------------------------------------------
 -- Speed ---------------------------------------------------

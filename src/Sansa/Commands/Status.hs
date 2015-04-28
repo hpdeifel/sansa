@@ -63,9 +63,12 @@ printStatus1 di =
          <+> percent ul tl
          <+> string (showInBest out DataSizeDim ul)
             <+> "/" <+> string (showInBest out DataSizeDim tl)
-  <$$> fill (T.length "Download:") (text "Speed")
+  <$$> fill (T.length "Download:") (text "Speed:")
          <+> string (showInBest out dataSpeedDim dr) <+> "Down,"
          <+> string (showInBest out dataSpeedDim ur) <+> "Up"
+  <$$> fill (T.length "Download:") (text "ETA:")
+         <+> "Down:" <+> eta dl tl dr
+         <+> "/" <+> "Up:" <+> eta ul tl ur
   <$$> text "Files:"
   <$$> indent 2 (vcat $ map printFile (diFiles di))
 
@@ -98,6 +101,11 @@ progress x' total'
                    text $ replicate ((x * 20) `div` total) '#'
   where x  = floor (x' # Byte)
         total = floor (total' # Byte)
+
+eta :: DataSize -> DataSize -> DataSpeed -> Doc
+eta x total speed
+  | (floor (speed # (Byte :/ Second)) :: Int) == 0 = "EOU (End of universe)"
+  | otherwise = string $ showTime $ (total |-| x) |/| speed
 
 toDoc :: Show a => a -> Doc
 toDoc = text . show
