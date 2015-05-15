@@ -10,6 +10,7 @@ import Aria2.Commands (addUris)
 import Aria2.Types
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import Network.URI
+import System.Directory
 
 doc :: Doc
 doc = text "Add URLs pointing to a single file for download."
@@ -28,7 +29,11 @@ addOpts = addAction <$> some (argument (str >>= readUri) (metavar "URL..."))
 
 addAction :: [URI] -> CmdAction ()
 addAction uris = do
-  GID gid <- runAria2 $ addUris uris
+  cwd <- liftIO getCurrentDirectory
+  let opts = DlOptions {
+        optDir = Just cwd
+      }
+  GID gid <- runAria2 $ addUris uris opts
   liftIO $ T.putStrLn gid
 
 readUri :: String -> ReadM URI

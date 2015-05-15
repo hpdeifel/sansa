@@ -101,7 +101,7 @@ instance (CmdType r, ToJSON a) => CmdType (a -> r) where
 command :: (CmdType r) => MethodName -> r
 command name = execCmd name []
 
-addUris :: [URI] -> Command GID
+addUris :: [URI] -> DlOptions -> Command GID
 addUris = command "aria2.addUri"
 
 pause :: GID -> Command GID

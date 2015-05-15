@@ -10,6 +10,7 @@ module Aria2.Types
        , UriInfo(..)
        , FileInfo(..)
        , DownloadInfo(..)
+       , DlOptions(..)
        ) where
 
 import Data.Text (Text)
@@ -21,6 +22,7 @@ import Network.URI
 import Network.URI.Json ()
 import Data.Aeson.Types
 import Data.Units
+import Data.Maybe
 
 newtype GID = GID Text
 
@@ -160,3 +162,16 @@ instance FromJSON DownloadInfo where
 
 readBytesPerSecond :: String -> DataSpeed
 readBytesPerSecond = (% (Byte :/ Second)) . read
+
+
+-- TODO A lot more options are available
+data DlOptions = DlOptions {
+  optDir :: Maybe FilePath
+}
+
+instance FromJSON DlOptions where
+  parseJSON (Object v) = DlOptions <$> v .:? "dir"
+
+instance ToJSON DlOptions where
+  toJSON opts = object $ catMaybes
+                [ ("dir" .=) <$> optDir opts ]

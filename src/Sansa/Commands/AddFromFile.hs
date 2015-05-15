@@ -12,6 +12,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Aria2.Commands (addUris)
 import Aria2.Types
+import System.Directory
 
 doc :: Doc
 doc = text "Read URLs from FILE." <> line <> line
@@ -34,9 +35,13 @@ affOpts = affAction <$> argument str (metavar "FILE")
 affAction :: FilePath -> CmdAction ()
 affAction file = do
   jobs <- lines <$> liftIO (readF file)
+  cwd <- liftIO getCurrentDirectory
   forM_ jobs $ \job -> do
     uris <- mapM parseURI' (words job)
-    GID gid <- runAria2 $ addUris uris
+    let opts = DlOptions {
+          optDir = Just cwd
+        }
+    GID gid <- runAria2 $ addUris uris opts
     liftIO $ T.putStrLn gid
 
   where readF "-" = getContents
