@@ -13,6 +13,7 @@ import qualified Data.Text.IO as T
 import Aria2.Commands (addUris)
 import Aria2.Types
 import System.Directory
+import Data.Maybe
 
 doc :: Doc
 doc = text "Read URLs from FILE." <> line <> line
@@ -20,6 +21,8 @@ doc = text "Read URLs from FILE." <> line <> line
    <> line
    <> text "must all point to the same file." <> line <> line
    <> text "FILE is -, read from stdin." <> line
+   <$$> text "By default, the downloaded files are saved to the current directory."
+   <$$> text "This can be overwritten with --dir." <> line
    <> line <> text "The GID of every download is printed to stdout."
 
 addFromFileCmd :: Command
@@ -30,12 +33,18 @@ addFromFileCmd = info (helper <*> affOpts)
                    )
 
 affOpts :: Parser (CmdAction ())
-affOpts = affAction <$> argument str (metavar "FILE")
+affOpts = affAction
+  <$> optional (strOption
+       ( long "dir"
+      <> short 'd'
+      <> metavar "DIRECTORY"
+      <> help "Directory to save the files to"))
+  <*> argument str (metavar "FILE")
 
-affAction :: FilePath -> CmdAction ()
-affAction file = do
+affAction :: Maybe FilePath -> FilePath -> CmdAction ()
+affAction dir file = do
   jobs <- lines <$> liftIO (readF file)
-  cwd <- liftIO getCurrentDirectory
+  cwd <- flip fromMaybe dir <$> liftIO getCurrentDirectory
   forM_ jobs $ \job -> do
     uris <- mapM parseURI' (words job)
     let opts = DlOptions {
