@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Sansa.Commands.AddFromFile
        ( addFromFileCmd
        ) where
@@ -47,7 +49,9 @@ affAction opts file = do
     uris <- mapM parseURI' (words job)
     let opts' = opts { optDir = Just cwd }
     GID gid <- runAria2 $ addUris uris opts'
-    liftIO $ T.putStrLn gid
+    liftIO $ do
+      T.putStr "Queued download with id: "
+      T.putStrLn gid
 
   where readF "-" = getContents
         readF name = readFile name

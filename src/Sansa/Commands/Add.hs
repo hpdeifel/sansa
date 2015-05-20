@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, RecordWildCards #-}
+{-# LANGUAGE LambdaCase, RecordWildCards, OverloadedStrings #-}
 module Sansa.Commands.Add
        ( addCmd
        ) where
@@ -38,7 +38,9 @@ addAction opts uris = do
   cwd <- flip fromMaybe (optDir opts) <$> liftIO getCurrentDirectory
   let opts' = opts { optDir = Just cwd }
   GID gid <- runAria2 $ addUris uris opts'
-  liftIO $ T.putStrLn gid
+  liftIO $ do
+    T.putStr "Queued download with id: "
+    T.putStrLn gid
 
 readUri :: String -> ReadM URI
 readUri uri = case parseURI uri of
