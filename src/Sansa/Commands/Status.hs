@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Sansa.Commands.Status ( statusCmd ) where
 
@@ -10,6 +10,8 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Units
 import Text.Printf
+import Data.Maybe
+import Data.List
 
 doc :: Doc
 doc = text "Print the current status of each download"
@@ -53,24 +55,26 @@ printStatus dis = liftIO $
 printStatus1 :: DownloadInfo -> Doc
 printStatus1 di =
        text "#" <> text' gid <+> toDoc (diStatus di)
-  <$$> text "Download:"
+  <$$> fill' (text "Download:")
          <+> progress dl tl
          <+> percent dl tl
          <+> string (showInBest out DataSizeDim dl)
             <+> "/" <+> string (showInBest out DataSizeDim tl)
-  <$$> fill (T.length "Download:") (text "Upload:")
+  <$$> fill' (text "Upload:")
          <+> progress ul tl
          <+> percent ul tl
          <+> string (showInBest out DataSizeDim ul)
             <+> "/" <+> string (showInBest out DataSizeDim tl)
-  <$$> fill (T.length "Download:") (text "Speed:")
+  <$$> fill' (text "Speed:")
          <+> string (showInBest out dataSpeedDim dr) <+> "Down,"
          <+> string (showInBest out dataSpeedDim ur) <+> "Up"
-  <$$> fill (T.length "Download:") (text "ETA:")
+  <$$> fill' (text "ETA:")
          <+> "Down:" <+> eta dl tl dr
          <+> "/" <+> "Up:" <+> eta ul tl ur
+  <$$> fill' (text "Directory:")
+         <+> (if dir == "" then "(none)" else text dir)
   <$$> text "Files:"
-  <$$> indent 2 (vcat $ map printFile (diFiles di))
+  <$$> indent 2 (vcat $ map (printFile dir) (diFiles di))
 
   where GID gid = diGID di
         dl = diCompletedLength di
@@ -80,10 +84,16 @@ printStatus1 di =
         ur = diUploadSpeed di
         dr = diDownloadSpeed di
 
+        dir = slashify $ fromMaybe "" $ diDir di
+
+        fill' = fill $ maximum (map length keys) + 1
+        (keys :: [String]) = ["Download", "Upload", "Speed", "ETA", "Directory"]
+
         out = printf "%.2g"
 
-printFile :: FileInfo -> Doc
-printFile = text . fiPath
+printFile :: FilePath -> FileInfo -> Doc
+printFile dir fi = text $ fromMaybe path $ stripPrefix dir path
+  where path = fiPath fi
 
 percent :: DataSize -> DataSize -> Doc
 percent x' total'
@@ -112,3 +122,9 @@ toDoc = text . show
 
 text' :: Text -> Doc
 text' = text . T.unpack
+
+slashify :: FilePath -> FilePath
+slashify "" = ""
+slashify path
+  | last path == '/' = path
+  | otherwise        = path ++ "/"
