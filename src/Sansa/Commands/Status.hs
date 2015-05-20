@@ -12,6 +12,7 @@ import Data.Units
 import Text.Printf
 import Data.Maybe
 import Data.List
+import Network.URI (uriToString)
 
 doc :: Doc
 doc = text "Print the current status of each download"
@@ -92,8 +93,11 @@ printStatus1 di =
         out = printf "%.2g"
 
 printFile :: FilePath -> FileInfo -> Doc
-printFile dir fi = text $ fromMaybe path $ stripPrefix dir path
+printFile dir fi = vcat uris <$$> filename
   where path = fiPath fi
+        filename = text $ ("-> "++) $ fromMaybe path $ stripPrefix dir path
+        uris = map (text . ("<- "++) . printUri) (fiUris fi)
+        printUri uri = uriToString id (uiURI uri) ""
 
 percent :: DataSize -> DataSize -> Doc
 percent x' total'
