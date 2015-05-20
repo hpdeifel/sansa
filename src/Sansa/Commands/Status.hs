@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, LambdaCase #-}
 
 module Sansa.Commands.Status ( statusCmd ) where
 
@@ -13,6 +13,7 @@ import Text.Printf
 import Data.Maybe
 import Data.List
 import Network.URI (uriToString)
+import System.IO
 
 doc :: Doc
 doc = text "Print the current status of each download"
@@ -38,8 +39,9 @@ statusOpts = statusAction <$>
 
 statusAction :: StatusOpts -> CmdAction ()
 statusAction (Some [])   = do
-  active <- concat <$> mapM runAria2 [tellActive, tellWaiting 0 99999]
-  printStatus active
+  concat <$> mapM runAria2 [tellActive, tellWaiting 0 99999] >>= \case
+    []     -> liftIO $ hPutStrLn stderr "No active downloads."
+    active -> printStatus active
 statusAction (Some gids) = do
   downloads <- mapM (runAria2 . tellStatus) gids
   printStatus downloads
