@@ -59,12 +59,14 @@ doc = text "sansa - rpc frontend for aria2" <> line
    <$$> text "download-IDs, that are used to identify specific downloads."
 
 main :: IO ()
-main = execParser opts >>= uncurry runAction
+main = customExecParser pref opts >>= uncurry runAction
 
   where opts = info (helper <*> optParser)
                (  fullDesc
                <> headerDoc (Just doc)
                )
+
+        pref = prefs showHelpOnError
 
 textOption ::  Mod OptionFields Text -> Parser Text
 textOption = option (T.pack <$> str)
