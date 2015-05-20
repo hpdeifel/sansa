@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, RecordWildCards #-}
 module Sansa.Commands.Add
        ( addCmd
        ) where
@@ -6,8 +6,10 @@ module Sansa.Commands.Add
 import qualified Data.Text.IO as T
 
 import Sansa.CommandsCommon
+import Sansa.Commands.CommonOpts
 import Aria2.Commands (addUris)
 import Aria2.Types
+
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import Network.URI
 import System.Directory
@@ -28,20 +30,14 @@ addCmd = info (helper <*> addOpts)
 
 addOpts :: Parser (CmdAction ())
 addOpts = addAction
-  <$> optional (strOption
-       ( long "dir"
-      <> short 'd'
-      <> metavar "DIRECTORY"
-      <> help "Directory to save the files to"))
+  <$> commonDlOpts
   <*> some (argument (str >>= readUri) (metavar "URL..."))
 
-addAction :: Maybe FilePath -> [URI] -> CmdAction ()
-addAction dir uris = do
-  cwd <- flip fromMaybe dir <$> liftIO getCurrentDirectory
-  let opts = DlOptions {
-        optDir = Just cwd
-      }
-  GID gid <- runAria2 $ addUris uris opts
+addAction :: DlOptions -> [URI] -> CmdAction ()
+addAction opts uris = do
+  cwd <- flip fromMaybe (optDir opts) <$> liftIO getCurrentDirectory
+  let opts' = opts { optDir = Just cwd }
+  GID gid <- runAria2 $ addUris uris opts'
   liftIO $ T.putStrLn gid
 
 readUri :: String -> ReadM URI

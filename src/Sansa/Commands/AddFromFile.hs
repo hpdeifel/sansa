@@ -3,6 +3,8 @@ module Sansa.Commands.AddFromFile
        ) where
 
 import Sansa.CommandsCommon
+import Sansa.Commands.CommonOpts
+
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
 import Control.Monad
 import Network.URI
@@ -34,23 +36,17 @@ addFromFileCmd = info (helper <*> affOpts)
 
 affOpts :: Parser (CmdAction ())
 affOpts = affAction
-  <$> optional (strOption
-       ( long "dir"
-      <> short 'd'
-      <> metavar "DIRECTORY"
-      <> help "Directory to save the files to"))
+  <$> commonDlOpts
   <*> argument str (metavar "FILE")
 
-affAction :: Maybe FilePath -> FilePath -> CmdAction ()
-affAction dir file = do
+affAction :: DlOptions -> FilePath -> CmdAction ()
+affAction opts file = do
   jobs <- lines <$> liftIO (readF file)
-  cwd <- flip fromMaybe dir <$> liftIO getCurrentDirectory
+  cwd <- flip fromMaybe (optDir opts) <$> liftIO getCurrentDirectory
   forM_ jobs $ \job -> do
     uris <- mapM parseURI' (words job)
-    let opts = DlOptions {
-          optDir = Just cwd
-        }
-    GID gid <- runAria2 $ addUris uris opts
+    let opts' = opts { optDir = Just cwd }
+    GID gid <- runAria2 $ addUris uris opts'
     liftIO $ T.putStrLn gid
 
   where readF "-" = getContents
