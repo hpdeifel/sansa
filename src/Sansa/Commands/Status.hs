@@ -63,17 +63,10 @@ printStatus1 di =
          <+> percent dl tl
          <+> string (showInBest out DataSizeDim dl)
             <+> "/" <+> string (showInBest out DataSizeDim tl)
-  <$$> fill' (text "Upload:")
-         <+> progress ul tl
-         <+> percent ul tl
-         <+> string (showInBest out DataSizeDim ul)
-            <+> "/" <+> string (showInBest out DataSizeDim tl)
   <$$> fill' (text "Speed:")
-         <+> string (showInBest out dataSpeedDim dr) <+> "Down,"
-         <+> string (showInBest out dataSpeedDim ur) <+> "Up"
+         <+> string (showInBest out dataSpeedDim dr)
   <$$> fill' (text "ETA:")
-         <+> "Down:" <+> eta dl tl dr
-         <+> "/" <+> "Up:" <+> eta ul tl ur
+         <+> eta dl tl dr
   <$$> fill' (text "Directory:")
          <+> (if dir == "" then "(none)" else text dir)
   <$$> text "Files:"
@@ -81,16 +74,14 @@ printStatus1 di =
 
   where GID gid = diGID di
         dl = diCompletedLength di
-        ul = diUploadLength di
         tl = diTotalLength di
 
-        ur = diUploadSpeed di
         dr = diDownloadSpeed di
 
         dir = slashify $ fromMaybe "" $ diDir di
 
         fill' = fill $ maximum (map length keys) + 1
-        (keys :: [String]) = ["Download", "Upload", "Speed", "ETA", "Directory"]
+        (keys :: [String]) = ["Download", "Speed", "ETA", "Directory"]
 
         out = printf "%.2g"
 
