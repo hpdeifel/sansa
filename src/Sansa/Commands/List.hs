@@ -13,11 +13,7 @@ import Data.Text (Text)
 import Control.Monad
 
 doc :: Doc
-doc = text "List downloads."
-   <> line <> line
-   <> text "If --all is specified, also include already stopped downloads in"
-   <> line
-   <> text "the output."
+doc = text "List all downloads."
 
 listCmd :: Command
 listCmd = info (helper <*> listOpts)
@@ -27,17 +23,17 @@ listCmd = info (helper <*> listOpts)
             )
 
 listOpts :: Parser (CmdAction ())
-listOpts = listAction <$>
-  flag False True (long "all" <> short 'a' <> help "Include stopped downloads")
+listOpts = pure listAction
 
-listAction :: Bool -> CmdAction ()
-listAction stopped = do
+listAction :: CmdAction ()
+listAction = do
   let actions = [ runAria2 tellActive
                   -- this is stupid. There is no 'get all', but only a
                   -- from-to with no indication how much there is...
                   -- let's hope, 99999 is enough
-                , runAria2 (tellWaiting 0 99999) ]
-               ++ [runAria2 (tellStopped 0 99999) | stopped]
+                , runAria2 (tellWaiting 0 99999)
+                , runAria2 (tellStopped 0 99999)
+                ]
   lst <- concat <$> sequence actions
 
   liftIO $ T.putStrLn $ T.concat
