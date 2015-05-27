@@ -15,3 +15,23 @@ commonDlOpts = DlOptions
       <> short 'o'
       <> metavar "FILENAME"
       <> help "Basename of the saved file"))
+
+  <*> (option readFollow
+       ( long "follow-torrent"
+      <> help "Follow torrent urls. Can be true, false or mem"
+      <> value Follow
+      <> showDefaultWith printFollow
+       ))
+
+readFollow :: ReadM FollowOption
+readFollow = eitherReader $ \s -> case s of
+  "true"  -> return Follow
+  "false" -> return DontFollow
+  "mem"   -> return FollowMem
+  _       -> Left $
+     "Unknown input \"" ++ s ++ "\". Expected true, false or mem"
+
+printFollow :: FollowOption -> String
+printFollow Follow = "true"
+printFollow DontFollow = "false"
+printFollow FollowMem = "mem"

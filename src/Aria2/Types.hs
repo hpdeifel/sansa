@@ -11,6 +11,8 @@ module Aria2.Types
        , FileInfo(..)
        , DownloadInfo(..)
        , DlOptions(..)
+       , defaultDlOptions
+       , FollowOption(..)
        ) where
 
 import Data.Text (Text)
@@ -268,18 +270,41 @@ readBytesPerSecond = (% (Byte :/ Second)) . read
 -- use-head
 -- user-agent
 
+data FollowOption = Follow | DontFollow | FollowMem
+
+instance FromJSON FollowOption where
+  parseJSON (String s) = case s of
+    "true" -> return Follow
+    "false" -> return DontFollow
+    "mem" -> return FollowMem
+
+instance ToJSON FollowOption where
+  toJSON Follow     = String "true"
+  toJSON DontFollow = String "false"
+  toJSON FollowMem  = String "mem"
+
 data DlOptions = DlOptions {
   optDir :: Maybe FilePath,
-  optOut :: Maybe FilePath
+  optOut :: Maybe FilePath,
+  optFollowTorrent :: FollowOption
+}
+
+defaultDlOptions :: DlOptions
+defaultDlOptions = DlOptions {
+  optDir = Nothing,
+  optOut = Nothing,
+  optFollowTorrent = Follow
 }
 
 instance FromJSON DlOptions where
   parseJSON (Object v) = DlOptions
                      <$> v .:? "dir"
                      <*> v .:? "out"
+                     <*> v .:? "follow-torrent" .!= Follow
 
 instance ToJSON DlOptions where
   toJSON opts = object $ catMaybes
                 [ ("dir" .=) <$> optDir opts
                 , ("out" .=) <$> optOut opts
+                , Just $ "follow-torrent" .= optFollowTorrent opts
                 ]
