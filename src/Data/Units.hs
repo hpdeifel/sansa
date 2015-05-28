@@ -120,15 +120,15 @@ instance Show Hour where
 type Time = MkQu_D TimeDim
 
 showTime :: Time -> String
-showTime t = unwords [h', m', s']
+showTime t = concat [h', m', s']
   where h = floor $ t # Hour :: Int
         m = floor $ (t |-| (fi h % Hour)) # Minute :: Int
         s = floor $ (t |-| (fi h % Hour) |-| (fi m % Minute)) # Second :: Int
 
         fi = fromIntegral
 
-        h' = if h == 0 then "" else fmt h "h"
-        m' = if h == 0 && m == 0 then "" else fmt m "m"
+        h' = if h == 0 then "" else fmt h "h "
+        m' = if h == 0 && m == 0 then "" else fmt m "m "
         s' = fmt s "s"
 
         fmt :: Int -> String -> String
