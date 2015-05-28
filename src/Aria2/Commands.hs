@@ -7,6 +7,7 @@ module Aria2.Commands
        , ConnectionSettings(..)
        , runCommand
        , addUris
+       , addTorrent
        , pause
        , pauseAll
        , forcePause
@@ -29,6 +30,8 @@ import Network.URI.Json ()
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Maybe
+import Data.ByteString (ByteString)
+import Data.ByteString.Json ()
 
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Except
@@ -103,6 +106,9 @@ command name = execCmd name []
 
 addUris :: [URI] -> DlOptions -> Command GID
 addUris = command "aria2.addUri"
+
+addTorrent :: ByteString -> [URI] -> DlOptions -> Command GID
+addTorrent = command "aria2.addTorrent"
 
 pause :: GID -> Command GID
 pause = command "aria2.pause"

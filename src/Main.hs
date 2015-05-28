@@ -41,6 +41,7 @@ optParser = (,) <$> opts <*> subparser commands
 commands :: Mod CommandFields (CmdAction ())
 commands = command "add" addCmd
         <> command "addfile" addFromFileCmd
+        <> command "add-torrent" addTorrentCmd
         <> command "pause" pauseCmd
         <> command "unpause" unpauseCmd
         <> command "remove" removeCmd
