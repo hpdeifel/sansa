@@ -23,6 +23,11 @@ commonDlOpts = DlOptions
       <> showDefaultWith printFollow
        ))
 
+  <*> (Wrap <$> switch
+       (  long "pause"
+       <> help "Immediately pause download"
+       ))
+
 readFollow :: ReadM FollowOption
 readFollow = eitherReader $ \s -> case s of
   "true"  -> return Follow

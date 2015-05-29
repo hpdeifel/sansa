@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings, FlexibleInstances #-}
 
 module Aria2.Types
        ( GID(..)
@@ -13,6 +13,7 @@ module Aria2.Types
        , DlOptions(..)
        , defaultDlOptions
        , FollowOption(..)
+       , Wrap(..)
        ) where
 
 import Data.Text (Text)
@@ -286,14 +287,28 @@ instance ToJSON FollowOption where
 data DlOptions = DlOptions {
   optDir :: Maybe FilePath,
   optOut :: Maybe FilePath,
-  optFollowTorrent :: FollowOption
+  optFollowTorrent :: FollowOption,
+  optPause :: Wrap Bool
 }
+
+newtype Wrap a = Wrap a
+
+instance FromJSON (Wrap Bool) where
+  parseJSON (String s) = case s of
+    "true" -> return (Wrap True)
+    "false" -> return (Wrap False)
+  parseJSON _ = mzero
+
+instance ToJSON (Wrap Bool) where
+  toJSON (Wrap True) = String "true"
+  toJSON (Wrap False) = String "false"
 
 defaultDlOptions :: DlOptions
 defaultDlOptions = DlOptions {
   optDir = Nothing,
   optOut = Nothing,
-  optFollowTorrent = Follow
+  optFollowTorrent = Follow,
+  optPause = Wrap False
 }
 
 instance FromJSON DlOptions where
@@ -301,10 +316,12 @@ instance FromJSON DlOptions where
                      <$> v .:? "dir"
                      <*> v .:? "out"
                      <*> v .:? "follow-torrent" .!= Follow
+                     <*> v .:? "pause" .!= Wrap False
 
 instance ToJSON DlOptions where
   toJSON opts = object $ catMaybes
                 [ ("dir" .=) <$> optDir opts
                 , ("out" .=) <$> optOut opts
                 , Just $ "follow-torrent" .= optFollowTorrent opts
+                , Just $ "pause" .= optPause opts
                 ]
