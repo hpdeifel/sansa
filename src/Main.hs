@@ -47,6 +47,7 @@ commands = command "add" addCmd
         <> command "remove" removeCmd
         <> command "list" listCmd
         <> command "status" statusCmd
+        <> command "options" optsCmd
 
 ---------------------------------------
 -- main

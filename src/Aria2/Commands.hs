@@ -20,6 +20,8 @@ module Aria2.Commands
        , tellActive
        , tellWaiting
        , tellStopped
+       , getGlobalOption
+       , getOption
        ) where
 
 import Aria2.Types
@@ -145,3 +147,9 @@ tellWaiting = command "aria2.tellWaiting"
 
 tellStopped :: Int -> Int -> Command [DownloadInfo]
 tellStopped = command "aria2.tellStopped"
+
+getGlobalOption :: Command Object
+getGlobalOption = command "aria2.getGlobalOption"
+
+getOption :: GID -> Command Object
+getOption = command "aria2.getOption"
