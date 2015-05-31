@@ -13,9 +13,11 @@ doc :: Doc
 doc =
     text "Remove the downloads specified by the GIDs"
    <> line <> line
-   <> text "If the specified download is in progress, it is stopped at first."
+   <> text "This does not remove the downloaded files, but releases resources"
+  <+> text "associated with the download."
    <> line
-   <> text "The status of a removed download becomes \"removed\"."
+ <$$> text "If the specified download is in progress, it is stopped at first."
+  <+> text "The status of a removed download becomes \"removed\"."
    <> line <> line
    <> text "If --force is specified, remove downloads without any action that"
    <> line
