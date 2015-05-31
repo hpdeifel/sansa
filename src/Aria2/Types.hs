@@ -14,6 +14,7 @@ module Aria2.Types
        , defaultDlOptions
        , FollowOption(..)
        , Wrap(..)
+       , GlobalRuntimeOptions(..)
        ) where
 
 import Data.Text (Text)
@@ -324,4 +325,26 @@ instance ToJSON DlOptions where
                 , ("out" .=) <$> optOut opts
                 , Just $ "follow-torrent" .= optFollowTorrent opts
                 , Just $ "pause" .= optPause opts
+                ]
+
+-- Global runtime options:
+--
+-- download-result
+-- log
+-- log-level
+-- max-concurrent-downloads
+-- max-download-result
+-- TODO max-overall-download-limit
+-- TODO max-overall-upload-limit
+-- save-cookies
+-- save-session
+-- server-stat-of
+
+data GlobalRuntimeOptions = GROptions {
+  maxConcurrentDownloads :: Maybe Int
+}
+
+instance ToJSON GlobalRuntimeOptions where
+  toJSON opts = object $ catMaybes
+                [ ("max-concurrent-downloads" .=) <$> maxConcurrentDownloads opts
                 ]

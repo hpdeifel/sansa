@@ -40,3 +40,13 @@ printFollow :: FollowOption -> String
 printFollow Follow = "true"
 printFollow DontFollow = "false"
 printFollow FollowMem = "mem"
+
+-- Global runtime options
+
+commonGROpts :: Parser GlobalRuntimeOptions
+commonGROpts = GROptions
+  <$> optional (option auto
+       ( long "max-concurrent-downloads"
+      <> metavar "NUM"
+      <> help "Maximum number of parallel downloads"
+       ))
