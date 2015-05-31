@@ -44,7 +44,7 @@ commands = command "add" addCmd
         <> command "add-torrent" addTorrentCmd
         <> command "pause" pauseCmd
         <> command "unpause" unpauseCmd
-        <> command "remove" removeCmd
+        <> command "stop" stopCmd
         <> command "list" listCmd
         <> command "status" statusCmd
         <> command "options" optsCmd

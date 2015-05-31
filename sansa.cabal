@@ -22,7 +22,7 @@ executable sansa
                        Sansa.Commands.AddFromFile,
                        Sansa.Commands.Pause,
                        Sansa.Commands.Unpause,
-                       Sansa.Commands.Remove,
+                       Sansa.Commands.Stop,
                        Sansa.Commands.List,
                        Sansa.Commands.Status,
                        Sansa.Commands.CommonOpts
