@@ -16,6 +16,8 @@ module Aria2.Commands
        , unpauseAll
        , remove
        , forceRemove
+       , purgeDownloadResult
+       , removeDownloadResult
        , tellStatus
        , tellActive
        , tellWaiting
@@ -135,6 +137,12 @@ remove = command "aria2.remove"
 
 forceRemove :: GID -> Command GID
 forceRemove = command "aria2.forceRemove"
+
+purgeDownloadResult :: Command OK
+purgeDownloadResult = command "aria2.purgeDownloadResult"
+
+removeDownloadResult :: GID -> Command OK
+removeDownloadResult = command "aria2.removeDownloadResult"
 
 tellStatus :: GID -> Command DownloadInfo
 tellStatus = command "aria2.tellStatus"
