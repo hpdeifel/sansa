@@ -15,6 +15,7 @@ module Aria2.Types
        , FollowOption(..)
        , Wrap(..)
        , GlobalRuntimeOptions(..)
+       , Status(..)
        ) where
 
 import Data.Text (Text)
