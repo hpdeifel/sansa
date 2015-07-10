@@ -3,6 +3,7 @@
 module Sansa.Commands.Status ( statusCmd ) where
 
 import Sansa.CommandsCommon hiding (empty)
+import Sansa.AsciiStatus
 import Aria2.Types
 import Aria2.Commands (tellActive, tellWaiting, tellStopped, tellStatus)
 import Text.PrettyPrint.ANSI.Leijen hiding ((<>),(<$>))
@@ -58,11 +59,7 @@ printStatus dis = liftIO $
 printStatus1 :: DownloadInfo -> Doc
 printStatus1 di =
        text "#" <> text' gid <+> toDoc (diStatus di)
-  <$$> fill' (text "Download:")
-         <+> progress dl tl
-         <+> percent dl tl
-         <+> string (showInBest out DataSizeDim dl)
-            <+> "/" <+> string (showInBest out DataSizeDim tl)
+  <$$> fill' (text "Download:") <+> downloadLine di
   <$$> fill' (text "Speed:")
          <+> string (showInBest out dataSpeedDim dr)
   <$$> fill' (text "ETA:")
@@ -91,28 +88,6 @@ printFile dir fi = vcat uris <$$> filename
         filename = text $ ("-> "++) $ fromMaybe path $ stripPrefix dir path
         uris = map (text . ("<- "++) . printUri) (fiUris fi)
         printUri uri = uriToString id (uiURI uri) ""
-
-percent :: DataSize -> DataSize -> Doc
-percent x' total'
-  | total == 0 = text "(0%)  "
-  | otherwise  = fill (3+1+2) $
-                 parens $ int ((x * 100) `div` total) <> text "%"
-
-  where x = floor (x' # Byte)
-        total = floor (total' # Byte)
-
-progress :: DataSize -> DataSize -> Doc
-progress x' total'
-  | total == 0 = brackets $ fill 20 empty
-  | otherwise = brackets $ fill 20 $
-                   text $ replicate ((x * 20) `div` total) '#'
-  where x  = floor (x' # Byte)
-        total = floor (total' # Byte)
-
-eta :: DataSize -> DataSize -> DataSpeed -> Doc
-eta x total speed
-  | (floor (speed # (Byte :/ Second)) :: Int) == 0 = "EOU (End of universe)"
-  | otherwise = string $ showTime $ (total |-| x) |/| speed
 
 toDoc :: Show a => a -> Doc
 toDoc = text . show
