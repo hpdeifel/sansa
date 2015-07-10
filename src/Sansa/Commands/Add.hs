@@ -66,8 +66,13 @@ waitForDownload :: GID -> CmdAction ()
 waitForDownload gid = do
   di <- runAria2 $ tellStatus gid
 
+  let eta' = eta (diCompletedLength di)
+                 (diTotalLength di)
+                 (diDownloadSpeed di)
+
   liftIO $ do
     putDoc $ "\r" <> text (show $ diStatus di) <+> downloadLine di
+             <+> "| ETA:" <+> eta'
     hFlush stdout
 
   case diStatus di of
