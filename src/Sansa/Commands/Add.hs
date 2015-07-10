@@ -7,6 +7,7 @@ import qualified Data.Text.IO as T
 
 import Sansa.CommandsCommon
 import Sansa.Commands.CommonOpts
+import Sansa.AsciiStatus
 import Aria2.Commands (addUris, tellStatus)
 import Aria2.Types
 
@@ -17,6 +18,7 @@ import Data.Maybe
 import Control.Monad
 import System.Exit
 import Control.Concurrent
+import System.IO
 
 doc :: Doc
 doc = text "Add URLs pointing to a single file for download." <> line
@@ -62,14 +64,18 @@ readUri uri = case parseURI uri of
 -- require some refactoring.
 waitForDownload :: GID -> CmdAction ()
 waitForDownload gid = do
-  liftIO $ threadDelay pollingInverval
-
   di <- runAria2 $ tellStatus gid
-  case diStatus di of
-    StError    -> liftIO $ exitWith (ExitFailure 1)
-    StRemoved  -> liftIO $ exitWith (ExitFailure 2)
-    StComplete -> liftIO exitSuccess
-    _          -> waitForDownload gid
 
+  liftIO $ do
+    putDoc $ "\r" <> text (show $ diStatus di) <+> downloadLine di
+    hFlush stdout
+
+  case diStatus di of
+    StError    -> liftIO $ putStr "\n" >> exitWith (ExitFailure 1)
+    StRemoved  -> liftIO $ putStr "\n" >> exitWith (ExitFailure 2)
+    StComplete -> liftIO $ putStr "\n" >> exitSuccess
+    _          -> do
+      liftIO $ threadDelay pollingInverval
+      waitForDownload gid
 
   where pollingInverval = 1 * 1000 * 1000 -- 1 second
