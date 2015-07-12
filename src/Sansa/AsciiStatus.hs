@@ -22,7 +22,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import System.IO
-import Control.Concurrent
 
 progressBar :: DataSize -> DataSize -> Doc
 progressBar x' total'
@@ -68,8 +67,9 @@ newtype OverwriteT m a = OverwriteT { runOverwriteT :: StateT Int m a }
 instance MonadTrans OverwriteT where
   lift = OverwriteT . lift
 
-withOverwrite :: Monad m => OverwriteT m a -> m a
+withOverwrite :: (Applicative m, MonadIO m) => OverwriteT m a -> m a
 withOverwrite action = evalStateT (runOverwriteT action) 0
+                       <* liftIO (T.putStr "\n")
 
 overwrite :: MonadIO m => Text -> OverwriteT m ()
 overwrite message = do

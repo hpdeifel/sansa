@@ -51,7 +51,7 @@ addAction opts uris wait = do
     T.putStrLn gid
   when wait $ do
     liftIO $ putStrLn "Waiting for download to finish"
-    waitForDownload (GID gid)
+    waitForDownload (GID gid) >>= liftIO . exitWith
 
 readUri :: String -> ReadM URI
 readUri uri = case parseURI uri of
@@ -62,7 +62,7 @@ readUri uri = case parseURI uri of
 -- At the moment, this just polls.
 -- A better implementation would use the websocket API of aria2, but that would
 -- require some refactoring.
-waitForDownload :: GID -> CmdAction ()
+waitForDownload :: GID -> CmdAction ExitCode
 waitForDownload gid = withOverwrite loop
 
   where loop = do
@@ -76,9 +76,9 @@ waitForDownload gid = withOverwrite loop
                      <+> "| ETA:" <+> eta'
 
           case diStatus di of
-            StError    -> liftIO $ putStr "\n" >> exitWith (ExitFailure 1)
-            StRemoved  -> liftIO $ putStr "\n" >> exitWith (ExitFailure 2)
-            StComplete -> liftIO $ putStr "\n" >> exitSuccess
+            StError    -> return (ExitFailure 1)
+            StRemoved  -> return (ExitFailure 2)
+            StComplete -> return ExitSuccess
             _          -> do
               liftIO $ threadDelay pollingInverval
               loop
