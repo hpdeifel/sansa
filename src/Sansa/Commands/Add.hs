@@ -16,9 +16,9 @@ import Network.URI
 import System.Directory
 import Data.Maybe
 import Control.Monad
+import Control.Monad.Trans.Class
 import System.Exit
 import Control.Concurrent
-import System.IO
 
 doc :: Doc
 doc = text "Add URLs pointing to a single file for download." <> line
@@ -63,24 +63,24 @@ readUri uri = case parseURI uri of
 -- A better implementation would use the websocket API of aria2, but that would
 -- require some refactoring.
 waitForDownload :: GID -> CmdAction ()
-waitForDownload gid = do
-  di <- runAria2 $ tellStatus gid
+waitForDownload gid = withOverwrite loop
 
-  let eta' = eta (diCompletedLength di)
-                 (diTotalLength di)
-                 (diDownloadSpeed di)
+  where loop = do
+          di <- lift $ runAria2 $ tellStatus gid
 
-  liftIO $ do
-    putDoc $ "\r" <> text (show $ diStatus di) <+> downloadLine di
-             <+> "| ETA:" <+> eta'
-    hFlush stdout
+          let eta' = eta (diCompletedLength di)
+                         (diTotalLength di)
+                         (diDownloadSpeed di)
 
-  case diStatus di of
-    StError    -> liftIO $ putStr "\n" >> exitWith (ExitFailure 1)
-    StRemoved  -> liftIO $ putStr "\n" >> exitWith (ExitFailure 2)
-    StComplete -> liftIO $ putStr "\n" >> exitSuccess
-    _          -> do
-      liftIO $ threadDelay pollingInverval
-      waitForDownload gid
+          overwriteDoc $ text (show $ diStatus di) <+> downloadLine di
+                     <+> "| ETA:" <+> eta'
 
-  where pollingInverval = 1 * 1000 * 1000 -- 1 second
+          case diStatus di of
+            StError    -> liftIO $ putStr "\n" >> exitWith (ExitFailure 1)
+            StRemoved  -> liftIO $ putStr "\n" >> exitWith (ExitFailure 2)
+            StComplete -> liftIO $ putStr "\n" >> exitSuccess
+            _          -> do
+              liftIO $ threadDelay pollingInverval
+              loop
+
+        pollingInverval = 1 * 1000 * 1000 -- 1 second

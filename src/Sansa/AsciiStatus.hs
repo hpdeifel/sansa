@@ -1,9 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, GeneralizedNewtypeDeriving #-}
 module Sansa.AsciiStatus
        ( progressBar
        , percent
        , eta
        , downloadLine
+       , OverwriteT
+       , withOverwrite
+       , overwrite
+       , overwriteDoc
        ) where
 
 import Aria2.Types
@@ -12,6 +16,13 @@ import Text.PrettyPrint.ANSI.Leijen (Doc,(<+>))
 import Data.Units
 import Data.Monoid
 import Text.Printf
+import Control.Monad.State
+import Control.Applicative
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import System.IO
+import Control.Concurrent
 
 progressBar :: DataSize -> DataSize -> Doc
 progressBar x' total'
@@ -49,3 +60,25 @@ downloadLine di = progressBar dl tl <+> percent dl tl <+> dlStr <+> "/" <+> tlSt
         tlStr = Doc.string (showInBest out DataSizeDim tl)
 
         out = printf "%.2g"
+
+
+newtype OverwriteT m a = OverwriteT { runOverwriteT :: StateT Int m a }
+  deriving (Monad, Applicative, Functor, MonadIO)
+
+instance MonadTrans OverwriteT where
+  lift = OverwriteT . lift
+
+withOverwrite :: Monad m => OverwriteT m a -> m a
+withOverwrite action = evalStateT (runOverwriteT action) 0
+
+overwrite :: MonadIO m => Text -> OverwriteT m ()
+overwrite message = do
+  oldLen <- OverwriteT get
+
+  let paddedMsg = T.justifyLeft oldLen ' ' message
+
+  liftIO $ T.putStr ("\r" <> paddedMsg) >> hFlush stdout
+  OverwriteT $ put (T.length message)
+
+overwriteDoc :: MonadIO m => Doc -> OverwriteT m ()
+overwriteDoc = overwrite . T.pack . (`Doc.displayS` "") . Doc.renderPretty 0.4 80
