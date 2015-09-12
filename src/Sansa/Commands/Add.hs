@@ -54,9 +54,12 @@ addAction opts uris wait = do
     waitForDownload (GID gid) >>= liftIO . exitWith
 
 readUri :: String -> ReadM URI
-readUri uri = case parseURI uri of
+readUri uri = case parseURI $ escapeSpaces uri of
   Nothing -> readerError $ "Could not parse URI " ++ show uri
   Just uri' -> return uri'
+
+  -- Allow the input URI to contain spaces
+  where escapeSpaces = escapeURIString (/= ' ')
 
 
 -- At the moment, this just polls.
